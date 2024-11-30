@@ -1,20 +1,214 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 
+// Componente principal
 export default function App() {
+  const [tasks, setTasks] = useState([]);
+  const [taskName, setTaskName] = useState('');
+  const [taskDescription, setTaskDescription] = useState('');
+  const [taskPriority, setTaskPriority] = useState('Alta');
+  const [editIndex, setEditIndex] = useState(null);
+
+  // Adicionar ou editar tarefa
+  const handleSaveTask = () => {
+    if (!taskName.trim()) {
+      Alert.alert('Erro', 'O nome da tarefa é obrigatório.');
+      return;
+    }
+
+    const newTask = { name: taskName, description: taskDescription, priority: taskPriority };
+
+    if (editIndex !== null) {
+      const updatedTasks = [...tasks];
+      updatedTasks[editIndex] = newTask;
+      setTasks(updatedTasks);
+      setEditIndex(null);
+    } else {
+      setTasks([...tasks, newTask]);
+    }
+
+    setTaskName('');
+    setTaskDescription('');
+    setTaskPriority('Alta');
+  };
+
+  // Excluir tarefa
+  const handleDeleteTask = (index) => {
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
+  };
+
+  // Ordenar tarefas por prioridade
+  const handleSortTasks = () => {
+    const priorityOrder = { Alta: 1, Média: 2, Baixa: 3 };
+    const sortedTasks = [...tasks].sort(
+      (a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]
+    );
+    setTasks(sortedTasks);
+  };
+
+  // Selecionar tarefa para edição
+  const handleEditTask = (index) => {
+    const task = tasks[index];
+    setTaskName(task.name);
+    setTaskDescription(task.description);
+    setTaskPriority(task.priority);
+    setEditIndex(index);
+  };
+
   return (
-    <View style={styles.headerContainer}>
-      <Text>Lista de Contatos</Text>
-      <StatusBar style="auto" />
+    <View style={styles.container}>
+      {/* Formulário de Tarefas */}
+      <Text style={styles.heading}>Gerenciador de Tarefas</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Nome da tarefa"
+        value={taskName}
+        onChangeText={setTaskName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Descrição"
+        value={taskDescription}
+        onChangeText={setTaskDescription}
+      />
+      <View style={styles.priorityContainer}>
+        {['Alta', 'Média', 'Baixa'].map((priority) => (
+          <Pressable
+            key={priority}
+            style={[
+              styles.priorityButton,
+              taskPriority === priority && styles.selectedPriority,
+            ]}
+            onPress={() => setTaskPriority(priority)}
+          >
+            <Text>{priority}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Pressable style={styles.addButton} onPress={handleSaveTask}>
+        <Text style={styles.addButtonText}>
+          {editIndex !== null ? 'Editar Tarefa' : 'Adicionar Tarefa'}
+        </Text>
+      </Pressable>
+
+      {/* Lista de Tarefas */}
+      <FlatList
+        data={tasks}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={styles.taskItem}>
+            <View>
+              <Text style={styles.taskName}>{item.name}</Text>
+              <Text style={styles.taskDescription}>{item.description}</Text>
+              <Text style={styles.taskPriority}>Prioridade: {item.priority}</Text>
+            </View>
+            <View style={styles.taskActions}>
+              <Pressable onPress={() => handleEditTask(index)}>
+                <Text style={styles.editText}>Editar</Text>
+              </Pressable>
+              <Pressable onPress={() => handleDeleteTask(index)}>
+                <Text style={styles.deleteText}>Excluir</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      />
+
+      {/* Botão de Ordenar */}
+      <Pressable style={styles.sortButton} onPress={handleSortTasks}>
+        <Text style={styles.sortButtonText}>Ordenar por Prioridade</Text>
+      </Pressable>
     </View>
   );
 }
 
+// Estilos
 const styles = StyleSheet.create({
-  headerContainer: {
+  container: {
     flex: 1,
-    backgroundColor: '#fff',
+    padding: 20,
+    backgroundColor: '#f9f9f9',
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  priorityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  priorityButton: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
+  selectedPriority: {
+    backgroundColor: '#ddd',
+  },
+  addButton: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  taskItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  taskName: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  taskDescription: {
+    color: '#555',
+  },
+  taskPriority: {
+    color: '#999',
+  },
+  taskActions: {
+    justifyContent: 'space-between',
+  },
+  editText: {
+    color: 'blue',
+  },
+  deleteText: {
+    color: 'red',
+  },
+  sortButton: {
+    backgroundColor: '#28a745',
+    padding: 15,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  sortButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
