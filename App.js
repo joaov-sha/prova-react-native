@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 
-// Componente principal
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [taskName, setTaskName] = useState('');
@@ -17,7 +16,6 @@ export default function App() {
   const [taskPriority, setTaskPriority] = useState('Alta');
   const [editIndex, setEditIndex] = useState(null);
 
-  // Adicionar ou editar tarefa
   const handleSaveTask = () => {
     if (!taskName.trim()) {
       Alert.alert('Erro', 'O nome da tarefa é obrigatório.');
@@ -40,13 +38,11 @@ export default function App() {
     setTaskPriority('Alta');
   };
 
-  // Excluir tarefa
   const handleDeleteTask = (index) => {
     const updatedTasks = tasks.filter((_, i) => i !== index);
     setTasks(updatedTasks);
   };
 
-  // Ordenar tarefas por prioridade
   const handleSortTasks = () => {
     const priorityOrder = { Alta: 1, Média: 2, Baixa: 3 };
     const sortedTasks = [...tasks].sort(
@@ -55,7 +51,6 @@ export default function App() {
     setTasks(sortedTasks);
   };
 
-  // Selecionar tarefa para edição
   const handleEditTask = (index) => {
     const task = tasks[index];
     setTaskName(task.name);
@@ -66,7 +61,6 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {/* Formulário de Tarefas */}
       <Text style={styles.heading}>Gerenciador de Tarefas</Text>
       <TextInput
         style={styles.input}
@@ -80,27 +74,30 @@ export default function App() {
         value={taskDescription}
         onChangeText={setTaskDescription}
       />
-      <View style={styles.priorityContainer}>
+
+      {/* "Radio Buttons" para Prioridade */}
+      <Text style={styles.radioLabel}>Prioridade:</Text>
+      <View style={styles.radioGroup}>
         {['Alta', 'Média', 'Baixa'].map((priority) => (
           <Pressable
             key={priority}
-            style={[
-              styles.priorityButton,
-              taskPriority === priority && styles.selectedPriority,
-            ]}
+            style={styles.radioButton}
             onPress={() => setTaskPriority(priority)}
           >
-            <Text>{priority}</Text>
+            <View style={styles.radioCircle}>
+              {taskPriority === priority && <View style={styles.radioSelected} />}
+            </View>
+            <Text style={styles.radioText}>{priority}</Text>
           </Pressable>
         ))}
       </View>
+
       <Pressable style={styles.addButton} onPress={handleSaveTask}>
         <Text style={styles.addButtonText}>
           {editIndex !== null ? 'Editar Tarefa' : 'Adicionar Tarefa'}
         </Text>
       </Pressable>
 
-      {/* Lista de Tarefas */}
       <FlatList
         data={tasks}
         keyExtractor={(item, index) => index.toString()}
@@ -123,7 +120,6 @@ export default function App() {
         )}
       />
 
-      {/* Botão de Ordenar */}
       <Pressable style={styles.sortButton} onPress={handleSortTasks}>
         <Text style={styles.sortButtonText}>Ordenar por Prioridade</Text>
       </Pressable>
@@ -131,7 +127,6 @@ export default function App() {
   );
 }
 
-// Estilos
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -150,19 +145,38 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 5,
   },
-  priorityContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  radioLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 10,
   },
-  priorityButton: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+  radioGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
   },
-  selectedPriority: {
-    backgroundColor: '#ddd',
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioCircle: {
+    height: 20,
+    width: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#007bff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  radioSelected: {
+    height: 10,
+    width: 10,
+    borderRadius: 5,
+    backgroundColor: '#007bff',
+  },
+  radioText: {
+    fontSize: 16,
   },
   addButton: {
     backgroundColor: '#007bff',
